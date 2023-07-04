@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {BrowserProvider, Contract, parseEther, toBeHex} from 'ethers'
 import { contractAbi, contractAddress } from '../utils/constants'
-import { FormData } from '../components/ConnectSection';
+import { FormData } from '../components/Connection';
 
 export interface ITransactionContext {
     currentAccount: string | undefined

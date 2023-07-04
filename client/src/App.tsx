@@ -1,4 +1,4 @@
-import { Connect } from "./components/ConnectSection"
+import { Connect } from "./components/Connection"
 import { Navbar } from "./components/Navbar"
 import { TransactionProvider } from "./context/TransactionContext"
 
