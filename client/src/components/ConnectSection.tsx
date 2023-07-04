@@ -2,6 +2,7 @@ import * as React from 'react'
 import {GrConnect} from 'react-icons/gr'
 import { EthereumCard } from './EthereumCard'
 import { Loader } from './Loader'
+import { useTransactionContext } from '../context/TransactionContext'
 
 interface InputProps {
     id: string
@@ -12,7 +13,7 @@ interface InputProps {
     type?: string
 }
 
-interface FormData {
+export interface FormData {
     addressTo: string,
     amount: string,
     keyword: string,
@@ -33,7 +34,7 @@ const Guarantee = (props: LinesProps) => {
     return <li className={`${baseStyle} ${props.styleProps}`}><h1 className='hover:font-bold hover:text-purple-700'>{props.title}</h1></li>
 }
 
-export const Body = () => {
+export const Connect = () => {
     const [isLoading, setIsLoading] = React.useState(false)
     const [formData, setFormData] = React.useState<FormData>({
         addressTo: '',
@@ -41,6 +42,17 @@ export const Body = () => {
         keyword: '',
         message: ''
     })
+
+    const context = useTransactionContext()
+
+    if (!context) {
+        throw new Error('Context undefined')
+    }
+
+    const {transactionManager, currentAccount} = context
+    const [transactionCount, setTransactionCount] = React.useState<number>(Number(localStorage.getItem('txCount')))
+
+
 
 
     const inputHandler = (prop: keyof FormData, newValue: string) => {
@@ -51,25 +63,54 @@ export const Body = () => {
         })
     }
 
-    const submitHandler = () => {}
+    const submitHandler = async () => {
+        if (!currentAccount) {
+            throw new Error('Account not selected')
+        }
+        try {
+            const transactionHash = await transactionManager.sendTransaction(formData, currentAccount)
+            setIsLoading(true)
+            await transactionHash.wait()
+            setIsLoading(false)
+
+            const transactionCount = await transactionManager.getTransactionCount()
+
+            localStorage.setItem('txCount', transactionCount)
+            setTransactionCount(Number(transactionCount))
+        } catch {
+            setIsLoading(false)
+            console.error('Sending of a tx failed')
+        }
+
+    }
+
+    if (!context?.transactionManager) {
+        return null
+    }
 
     return (
         <div className='md:flex md:flex-row block md:justify-evenly justify-center w-full md:mt-[90px] mt-0'>
             <div className='flex flex-col items-center'>
                 <h1>Connect with the World</h1>
                 <h1>Send transaction across the world with immediate affect</h1>
-                <button className='flex space-x-2 justify-between items-center py-2 px-8 bg-purple-500 border-2 border-black rounded-2xl my-8'>
-                    <GrConnect />
-                    <h3 className='hover:font-bold'>Connect Your Wallet</h3>
-                </button>
+                {
+                    !currentAccount && 
+                        <button 
+                            className='flex space-x-2 justify-between items-center py-2 px-8 bg-purple-500 border-2 border-black rounded-2xl my-8'
+                            onClick={transactionManager.getWalletAccounts}
+                        >
+                            <GrConnect />
+                            <h3 className='hover:font-bold'>Connect Your Wallet</h3>
+                        </button>
+                }
                 <div>
                     <ul className='flex'>
                         {[['Secure', 'border-r-2 border-b-2 rounded-tl-full'], ['Reliable', 'border-x-2 border-b-2'], ['Web 3.0', 'border-l-2 border-b-2 rounded-tr-full']]
-                        .map(([title, styling]) =>(<Guarantee title={title} styleProps={styling} />))}
+                        .map(([title, styling]) =>(<Guarantee key={(Math.random() * 1000000000).toString()} title={title} styleProps={styling} />))}
                     </ul>
                     <ul className='flex'>
                     {[['Immediate', 'border-r-2 border-t-2 rounded-bl-full'], ['Worldwide', 'border-x-2 border-t-2 '], ['Blockchain', 'border-l-2 border-t-2 rounded-br-full']]
-                        .map(([title, styling]) =>(<Guarantee title={title} styleProps={styling} />))}
+                        .map(([title, styling]) =>(<Guarantee key={(Math.random() * 1000000000).toString()} title={title} styleProps={styling} />))}
                     </ul>
                 </div>
             </div>

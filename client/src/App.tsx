@@ -1,13 +1,16 @@
-import { Body } from "./components/Body"
+import { Connect } from "./components/ConnectSection"
 import { Navbar } from "./components/Navbar"
+import { TransactionProvider } from "./context/TransactionContext"
 
 function App() {
 
   return (
-    <div>
-        <Navbar />
-        <Body />
-    </div >
+    <TransactionProvider>
+      <div>
+          <Navbar />
+          <Connect />
+      </div >
+    </TransactionProvider>
   )
 }
 
