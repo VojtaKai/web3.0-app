@@ -6,7 +6,7 @@ function App() {
 
   return (
     <TransactionProvider>
-      <div>
+      <div className="main-theme">
           <Navbar />
           <Connect />
       </div >

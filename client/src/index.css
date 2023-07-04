@@ -18,3 +18,10 @@
 .ease-in-out {
   transition-timing-function: cubic-bezier(.4,0,.2,1);
 }
+
+.main-theme {
+  /* background: linear-gradient(6deg, rgba(2,0,36,1) 0%, rgba(62,32,74,1) 30%, rgba(231,0,255,1) 100%); */
+  /* background: linear-gradient(6deg, rgba(32,226,6,1) 0%, rgba(145,233,14,1) 22%, rgba(232,250,1,0.9808298319327731) 59%); */
+  /* background: linear-gradient(10deg, rgba(10,10,10,1) 0%, rgba(38,23,163,1) 29%, rgba(94,3,205,0.9808298319327731) 79%); */
+  background: linear-gradient(10deg, rgba(41,200,255,1) 0%, rgba(251,251,251,0.9808298319327731) 93%);
+}
