@@ -1,52 +1,129 @@
 import * as React from 'react'
-import {BrowserProvider, Contract, JsonRpcSigner, parseEther, toBeHex} from 'ethers'
+import {BrowserProvider, Contract, parseEther, toBeHex} from 'ethers'
 import { contractAbi, contractAddress } from '../utils/constants'
 import { FormData } from '../components/ConnectSection';
 
 export interface ITransactionContext {
-    transactionManager: TransactionManager,
     currentAccount: string | undefined
+    sendTransaction: (formData: FormData) => Promise<void>
+    getWalletAccounts: () => Promise<void>
+    transactionCount: number
+    isLoading: boolean
 }
+
+const { ethereum } = window as any;
 
 export const TransactionContext = React.createContext<ITransactionContext | null>(null);
 
 export const TransactionProvider = ({children}: {
     children: React.ReactNode
 }) => {
-    const { ethereum } = window as any;
-    const [transactionManager, setTransactionManager] = React.useState<TransactionManager | undefined>(undefined)
     const [currentAccount, setCurrentAccount] = React.useState<string | undefined>(undefined)
-
+    const [transactionCount, setTransactionCount] = React.useState<number>(Number(localStorage.getItem('txCount')) ?? 0)
+    const [transactionContract, setTransactionContract] = React.useState<Contract | undefined>(undefined)
+    const [isLoading, setIsLoading] = React.useState(false)
+    
+    
     React.useEffect(() => {
-        const loadSigner = async () => {
+        const setupContract = async () => {
             const browserProvider = new BrowserProvider(ethereum)
             const signer = await browserProvider.getSigner()
-            const transactionContract = new Contract(contractAddress, contractAbi, signer)
-            setTransactionManager(new TransactionManager(ethereum, browserProvider, signer, transactionContract))
+            setTransactionContract(new Contract(contractAddress, contractAbi, signer))
         }
 
-        loadSigner()
+        setupContract()
     }, [])
+
+    React.useEffect(() => {
+        const setupTransactionCount = async () => {
+            await getTransactionCount()
+        }
+        
+        setupTransactionCount
+    }, [transactionContract])
+
 
 
     React.useEffect(() => {
         const setAccount = async () => {
-            const accounts = await transactionManager?.getWalletAccounts()
+            const accounts = await getWalletAccounts()
             setCurrentAccount(accounts?.[0])
         }
 
         setAccount()
-    }, [transactionManager])
+    }, [])
 
-    if (!transactionManager) {
-        return
-    }
+    const getWalletAccounts = React.useCallback(async () => {
+        try {
+            if (!ethereum) {
+                return alert('Please, install Metamask. More info: https://metamask.io/download/')
+            }
+    
+            return await ethereum.request({ method: 'eth_requestAccounts' });
+
+        } catch (err) {
+            throw new Error('Unable to retrieve accounts')
+        }
+    }, [])
+
+
+    const sendTransaction = React.useCallback(async (formData: FormData) => {
+        if (!transactionContract) {
+            throw new Error('Contract failed to setup')
+        }
+
+        const {addressTo, amount, keyword, message} = formData
+
+        if (currentAccount === addressTo) {
+            throw new Error("Invalid action. One cannot send themselves ether")
+        }
+
+        if (!addressTo || !amount || !keyword || !message) {
+            return
+        }
+        
+        try {
+            const parsedAmount = parseEther(amount)
+
+            ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [{
+                    from: currentAccount,
+                    to: addressTo,
+                    gas: toBeHex('21000'),
+                    value: toBeHex(parsedAmount)
+                }]
+            })
+
+            const transactionHash = await transactionContract.addToBlockchain(addressTo, parsedAmount, message, keyword)
+            setIsLoading(true)
+            await transactionHash.wait()
+            setIsLoading(false)
+    
+            await getTransactionCount()
+        } catch {
+            setIsLoading(false)
+            console.error('Sending of a tx failed')
+        }
+    }, [transactionContract])
+
+    const getTransactionCount = React.useCallback(async () => {
+        if (!transactionContract) {
+            throw new Error('Contract failed to setup')
+        }
+        const transactionCount = await transactionContract.transactionCount()
+        localStorage.setItem('txCount', transactionCount)
+        setTransactionCount(Number(transactionCount))
+    }, [transactionContract])
     
 
     return (
         <TransactionContext.Provider value={{
-            transactionManager: transactionManager,
-            currentAccount: currentAccount
+            currentAccount,
+            isLoading,
+            getWalletAccounts,
+            sendTransaction,
+            transactionCount
         }}>
             {children}
         </TransactionContext.Provider>
@@ -54,62 +131,5 @@ export const TransactionProvider = ({children}: {
 }
 
 export const useTransactionContext = () => React.useContext(TransactionContext)
-
-class TransactionManager {
-    private ethereum
-    private browserProvider
-    private signer
-    private transactionContract
-    constructor(ethereum: any, browserProvider: BrowserProvider, signer: JsonRpcSigner, transactionContract: Contract) {
-        this.ethereum = ethereum
-        this.browserProvider = browserProvider
-        this.signer = signer
-        this.transactionContract = transactionContract
-
-        this.getWalletAccounts = this.getWalletAccounts.bind(this)
-        this.sendTransaction = this.sendTransaction.bind(this)
-        this.getTransactionCount = this.getTransactionCount.bind(this)
-    }
-
-    public getWalletAccounts = async () => {
-        try {
-            if (!this.ethereum) {
-                return alert('Please, install Metamask. More info: https://metamask.io/download/')
-            }
-    
-            return await this.ethereum.request({ method: 'eth_requestAccounts' });
-
-        } catch (err) {
-            throw new Error('Unable to retrieve accounts')
-        }
-    }
-
-    public sendTransaction = async (formData: FormData, currentAccount: string) => {
-        const {addressTo, amount, keyword, message} = formData
-
-        if (!addressTo || !amount || !keyword || !message) {
-            return console.error('Invalid form data')
-        }
-
-        const parsedAmount = parseEther(amount)
-        const params = [{
-            from: currentAccount,
-            to: addressTo,
-            gas: toBeHex('40000'),
-            value: toBeHex(parsedAmount)
-        }]
-
-        this.ethereum.request({
-            method: 'eth_sendTransaction',
-            params: params
-        })
-
-        return await this.transactionContract.addToBlockchain(addressTo, parsedAmount, message, keyword)
-    }
-
-    public getTransactionCount = async () => {
-        return await this.transactionContract.transactionCount()
-    }
-}
 
 

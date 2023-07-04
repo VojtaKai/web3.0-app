@@ -29,18 +29,26 @@ interface LinesProps {
     title: string
 }
 
+interface ValidData {
+    valid: boolean
+    errorMessage?: string
+}
+
 const Guarantee = (props: LinesProps) => {
     const baseStyle = 'border-4 border-black w-32 text-center py-1 bg-purple-400 cursor-pointer'
     return <li className={`${baseStyle} ${props.styleProps}`}><h1 className='hover:font-bold hover:text-purple-700'>{props.title}</h1></li>
 }
 
 export const Connect = () => {
-    const [isLoading, setIsLoading] = React.useState(false)
     const [formData, setFormData] = React.useState<FormData>({
         addressTo: '',
         amount: '',
         keyword: '',
         message: ''
+    })
+
+    const [isValidData, setIsValidData] = React.useState<ValidData>({
+        valid: false
     })
 
     const context = useTransactionContext()
@@ -49,44 +57,35 @@ export const Connect = () => {
         throw new Error('Context undefined')
     }
 
-    const {transactionManager, currentAccount} = context
-    const [transactionCount, setTransactionCount] = React.useState<number>(Number(localStorage.getItem('txCount')))
+    const {currentAccount, sendTransaction, getWalletAccounts, isLoading} = context
 
-
-
-
-    const inputHandler = (prop: keyof FormData, newValue: string) => {
+    const inputHandler = React.useCallback((prop: keyof FormData, newValue: string) => {
         setFormData(prevFormData => {
             const newFormData = {...prevFormData}
             newFormData[prop] = newValue
             return newFormData
         })
-    }
+    }, [formData])
 
-    const submitHandler = async () => {
-        if (!currentAccount) {
-            throw new Error('Account not selected')
+    const validateFormData = React.useCallback((formData: FormData) => {
+        const {addressTo, amount, keyword, message} = formData
+        if (!addressTo || !amount || !keyword || !message) {
+            setIsValidData({
+                valid: false,
+                errorMessage: 'Invalid input. All fields must be filled.'
+            })
         }
-        try {
-            const transactionHash = await transactionManager.sendTransaction(formData, currentAccount)
-            setIsLoading(true)
-            await transactionHash.wait()
-            setIsLoading(false)
-
-            const transactionCount = await transactionManager.getTransactionCount()
-
-            localStorage.setItem('txCount', transactionCount)
-            setTransactionCount(Number(transactionCount))
-        } catch {
-            setIsLoading(false)
-            console.error('Sending of a tx failed')
+        else {
+            setIsValidData({
+                valid: true
+            })
         }
+    }, [])
 
-    }
-
-    if (!context?.transactionManager) {
-        return null
-    }
+    const submitHandler = React.useCallback(async () => {
+        validateFormData(formData)
+        await sendTransaction(formData)
+    }, [sendTransaction, formData])
 
     return (
         <div className='md:flex md:flex-row block md:justify-evenly justify-center w-full md:mt-[90px] mt-0'>
@@ -97,7 +96,7 @@ export const Connect = () => {
                     !currentAccount && 
                         <button 
                             className='flex space-x-2 justify-between items-center py-2 px-8 bg-purple-500 border-2 border-black rounded-2xl my-8'
-                            onClick={transactionManager.getWalletAccounts}
+                            onClick={getWalletAccounts}
                         >
                             <GrConnect />
                             <h3 className='hover:font-bold'>Connect Your Wallet</h3>
@@ -130,6 +129,9 @@ export const Connect = () => {
                                 <h1 className='hover:font-medium'>Send Transaction</h1>
                             </button>
                         </div>
+                    }
+                    {
+                        !isValidData.valid && <h1 className="text-red-500 self-center">{isValidData.errorMessage}</h1>
                     }
                 </div>
             </div>
