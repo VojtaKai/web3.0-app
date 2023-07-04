@@ -84,7 +84,15 @@ export const Connect = () => {
 
     const submitHandler = React.useCallback(async () => {
         validateFormData(formData)
-        await sendTransaction(formData)
+        const succeeded = await sendTransaction(formData)
+        if (succeeded) {
+            setFormData({
+                addressTo: '',
+                amount: '',
+                keyword: '',
+                message: ''
+            })
+        }
     }, [sendTransaction, formData])
 
     return (

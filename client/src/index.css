@@ -15,6 +15,11 @@
   background: linear-gradient(328deg, rgba(2,0,36,1) 0%, rgba(62,32,74,1) 30%, rgba(231,0,255,1) 100%);
 }
 
+.blue-ethereum-card {
+  /* background: linear-gradient(60deg, rgb(125, 210, 241) 0%, rgba(90, 189, 247, 0.981) 60%); */
+  background: linear-gradient(15deg, rgba(255,255,255,1) 0%, rgba(24,116,227,1) 69%, rgba(11,35,166,0.9808298319327731) 100%);
+}
+
 .ease-in-out {
   transition-timing-function: cubic-bezier(.4,0,.2,1);
 }

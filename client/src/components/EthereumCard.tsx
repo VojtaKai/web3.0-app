@@ -20,7 +20,7 @@ function WhitenedElement({El, stylingProps}: WhitenedElementProps) {
 
 export const EthereumCard = () => {
     return (
-        <div className='bg-red border-2 border-black w-72 rounded-xl pl-2 purple-future-card p-2'>
+        <div className='bg-red border-2 border-black w-72 rounded-xl pl-2 blue-ethereum-card p-2'>
             <ul className='flex pb-10 justify-between'>
                 <li>
                     <WhitenedElement El={LiaEthereum} stylingProps={{size: '40px'}}/>
@@ -30,9 +30,9 @@ export const EthereumCard = () => {
                 </li>
             </ul>
 
-            <h3 className='text-white text-lg'>...</h3>
+            <h3 className='text-black text-lg'>...</h3>
             <ul className='flex justify-between items-center'>
-                <li className='text-white text-lg'>Ethereum</li>
+                <li className='text-black font-bold text-lg'>Ethereum</li>
                 <li>
                     <WhitenedElement El={FaMoneyCheckDollar} stylingProps={{size: '24px'}}/>
                 </li>

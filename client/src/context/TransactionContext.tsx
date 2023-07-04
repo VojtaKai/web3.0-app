@@ -5,7 +5,7 @@ import { FormData } from '../components/Connection';
 
 export interface ITransactionContext {
     currentAccount: string | undefined
-    sendTransaction: (formData: FormData) => Promise<void>
+    sendTransaction: (formData: FormData) => Promise<boolean>
     getWalletAccounts: () => Promise<void>
     transactionCount: number
     isLoading: boolean
@@ -79,9 +79,11 @@ export const TransactionProvider = ({children}: {
         }
 
         if (!addressTo || !amount || !keyword || !message) {
-            return
+            return false
         }
         
+        let succeeded = false
+
         try {
             const parsedAmount = parseEther(amount)
 
@@ -101,10 +103,13 @@ export const TransactionProvider = ({children}: {
             setIsLoading(false)
     
             await getTransactionCount()
+            succeeded = true
         } catch {
             setIsLoading(false)
             console.error('Sending of a tx failed')
         }
+
+        return succeeded
     }, [transactionContract])
 
     const getTransactionCount = React.useCallback(async () => {
