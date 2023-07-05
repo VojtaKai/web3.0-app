@@ -21,10 +21,7 @@ export const useFetch = (props: FetchProps) => {
                 const response = await fetch(`http://api.giphy.com/v1/gifs/random?api_key=${encodeURIComponent(API_KEY)}&tag=${encodeURIComponent(keyword.split(" ").join(""))}`, {
                     method: 'GET'
                 })
-                console.log('response', response)
                 const { data } = await response.json()
-                console.log('data', data)
-                console.log('url', data.url)
                 if (!data?.images?.original?.url) {
                     throw new Error('Gif URL missing')
                 }

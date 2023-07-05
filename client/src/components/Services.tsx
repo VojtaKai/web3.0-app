@@ -12,8 +12,8 @@ interface ServiceCardProps {
 const ServiceCard = (props: ServiceCardProps) => {
     const {title, description, icon, key} = props
     return (
-        <li key={key} className='flex flex-row border-2 rounded-xl border-black p-4 my-4 md:w-9/12'>
-            <div className='flex flex-row '>
+        <li key={key} className='border-2 rounded-xl border-black p-4 my-4 lg:w-9/12 w-full'>
+            <div className='flex'>
                 <div className='w-10 h-10 flex justify-center items-center rounded-full bg-blue-800 mr-2'>
                     {icon}
                 </div>
@@ -28,12 +28,12 @@ const ServiceCard = (props: ServiceCardProps) => {
 
 export const Services = () => {
     return (
-        <div className='flex md:flex-row w-full justify-center items-center align-start py-24'>
-            <div className="flex-1 flex flex-col justify-start items-start pl-36">
-                <h1 className='text-5xl'>Services that we <br /> continue to improve</h1>
-                <h3 className='text-xl mt-4'>Buy, sell, and transfer crypto assets with the user-friendly services we offer</h3>
+        <div className='flex lg:flex-row flex-col w-full lg:justify-center items-center lg:space-x-16 align-start py-24'>
+            <div className="flex-1 flex flex-col justify-start md:items-start items-center lg:pl-36">
+                <h1 className='text-5xl text-center md:text-start'>Services that we <br /> continue to improve</h1>
+                <h3 className='text-xl mt-4 text-center md:text-start'>Buy, sell, and transfer crypto assets with the user-friendly services we offer</h3>
             </div>
-            <ul >
+            <ul className='flex flex-col items-center lg:items-start'>
                 {[
                     {
                         icon: <BsShieldFillCheck fontSize={21} className='text-white'/>,

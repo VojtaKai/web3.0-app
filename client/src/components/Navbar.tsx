@@ -9,7 +9,7 @@ export const Navbar = () => {
     }
 
     const onLogin = () => {
-        console.log('LOGIN CLICKEEEED')
+        console.log('LOG IN')
     }
     return (
         <>

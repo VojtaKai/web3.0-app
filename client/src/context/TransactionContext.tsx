@@ -3,6 +3,7 @@ import {BrowserProvider, Contract, formatEther, parseEther, toBeHex} from 'ether
 import { contractAbi, contractAddress } from '../utils/constants'
 import { FormData } from '../components/Connection';
 import { TransactionProps } from '../components/Transactions';
+import { BigNumberish } from 'ethers';
 
 export interface ITransactionContext {
     currentAccount: string | undefined
@@ -10,11 +11,10 @@ export interface ITransactionContext {
     getWalletAccounts: () => Promise<void>
     transactionCount: number
     isLoading: boolean
-    getAllTransactions: () => Promise<void>
     allTransactions: TransactionProps[]
 }
 
-type TransactionTuple = [string, string, number, string, number, string]
+type TransactionTuple = [string, string, BigNumberish, string, BigNumberish, string]
 
 const { ethereum } = window as any;
 
@@ -27,38 +27,8 @@ export const TransactionProvider = ({children}: {
     const [transactionCount, setTransactionCount] = React.useState<number>(Number(localStorage.getItem('txCount')) ?? 0)
     const [allTransactions, setAllTransactions] = React.useState<TransactionProps[]>([])
     const [transactionContract, setTransactionContract] = React.useState<Contract | undefined>(undefined)
-    const [isLoading, setIsLoading] = React.useState(false)
+    const [isLoading, setIsLoading] = React.useState(false) 
     
-    
-    React.useEffect(() => {
-        const setupContract = async () => {
-            const browserProvider = new BrowserProvider(ethereum)
-            const signer = await browserProvider.getSigner()
-            setTransactionContract(new Contract(contractAddress, contractAbi, signer))
-        }
-
-        setupContract()
-    }, [])
-
-    React.useEffect(() => {
-        const setupTransactionCount = async () => {
-            await getTransactionCount()
-        }
-        
-        setupTransactionCount
-    }, [transactionContract])
-
-
-
-    React.useEffect(() => {
-        const setAccount = async () => {
-            const accounts = await getWalletAccounts()
-            setCurrentAccount(accounts?.[0])
-        }
-
-        setAccount()
-    }, [])
-
     const getWalletAccounts = React.useCallback(async () => {
         try {
             if (!ethereum) {
@@ -70,8 +40,40 @@ export const TransactionProvider = ({children}: {
         } catch (err) {
             throw new Error('Unable to retrieve accounts')
         }
-    }, [])
+    }, [ethereum])
 
+
+    const getTransactionCount = React.useCallback(async () => {
+        if (!transactionContract) {
+            return
+        }
+        const transactionCount = await transactionContract.transactionCount()
+        localStorage.setItem('txCount', transactionCount)
+        setTransactionCount(Number(transactionCount))
+    }, [transactionContract])
+
+    const getSortedTransactions = React.useCallback(async () => {
+        if (!transactionContract) {
+            return []
+        }
+        const transactionTuples: TransactionTuple[] = await transactionContract.getAllTransactions()
+        
+        const allTransactions: TransactionProps[] = transactionTuples.map(t => ({
+            id: Math.random(),
+            addressFrom: t[0],
+            addressTo: t[1],
+            amount: formatEther(t[2]),
+            message: t[3],
+            timestamp: Number(t[4]) * 1000, // to ms
+            keyword: t[5]
+        }))
+        return allTransactions.sort((t1, t2) => t1.timestamp > t2.timestamp ? -1 : 1)
+    }, [transactionContract])
+
+    const setAccount = React.useCallback(async () => {
+        const accounts = await getWalletAccounts()
+        setCurrentAccount(accounts?.[0])
+    }, [getWalletAccounts])
 
     const sendTransaction = React.useCallback(async (formData: FormData) => {
         if (!transactionContract) {
@@ -111,45 +113,56 @@ export const TransactionProvider = ({children}: {
             await getTransactionCount()
             succeeded = true
 
-            await getAllTransactions()
+            setAllTransactions(await getSortedTransactions())
         } catch {
             setIsLoading(false)
             console.error('Sending of a tx failed')
         }
 
         return succeeded
-    }, [transactionContract])
+    }, [transactionContract, currentAccount, setAccount, getSortedTransactions])
 
-    const getTransactionCount = React.useCallback(async () => {
-        if (!transactionContract) {
-            throw new Error('Contract failed to setup')
+    React.useEffect(() => {
+        const setupContract = async () => {
+            const browserProvider = new BrowserProvider(ethereum)
+            const signer = await browserProvider.getSigner()
+            setTransactionContract(new Contract(contractAddress, contractAbi, signer))
         }
-        const transactionCount = await transactionContract.transactionCount()
-        localStorage.setItem('txCount', transactionCount)
-        setTransactionCount(Number(transactionCount))
-    }, [transactionContract])
 
-    const getAllTransactions = React.useCallback(async () => {
-        if (!transactionContract) {
-            throw new Error('Contract failed to setup')
+        setupContract()
+    }, [])
+
+    React.useEffect(() => {
+        const setupTransactionCount = async () => {
+            await getTransactionCount()
         }
-        const transactionTuples: TransactionTuple[] = await transactionContract.getAllTransactions()
-        console.log('transactionTuples', transactionTuples)
         
-        const allTransactions: TransactionProps[] = transactionTuples.map(t => {
-            return {
-                id: Math.random(),
-                addressFrom: t[0],
-                addressTo: t[1],
-                amount: formatEther(t[2]),
-                message: t[3],
-                timestamp: Number(t[4]) * 1000, // to ms
-                keyword: t[5]
-            }
-        })
-        setAllTransactions(allTransactions)
-    }, [transactionContract])
-    
+        setupTransactionCount
+    }, [getTransactionCount])
+
+    React.useEffect(() => {
+        setAccount()
+    }, [setAccount])
+
+    React.useEffect(() => {
+        const setupTransactions = async () => {
+            const sortedTransactions = await getSortedTransactions()
+            setAllTransactions(sortedTransactions)
+        }
+
+        setupTransactions()
+    }, [getSortedTransactions])
+
+    React.useEffect(() => {
+        if(ethereum) {
+            ethereum.on('chainChanged', () => {
+                window.location.reload();
+            })
+            ethereum.on('accountsChanged', () => {
+                window.location.reload();
+            })
+        }
+    })
 
     return (
         <TransactionContext.Provider value={{
@@ -158,7 +171,6 @@ export const TransactionProvider = ({children}: {
             getWalletAccounts,
             sendTransaction,
             transactionCount,
-            getAllTransactions,
             allTransactions
         }}>
             {children}

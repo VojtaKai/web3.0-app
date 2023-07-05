@@ -6,9 +6,9 @@ import { FaTiktok } from 'react-icons/fa'
 export const Footer = () => {
     return (
         <div>
-            <div className='flex flex-row justify-between items-center px-10'>
-                <h1 className='w-3/12'>CHAIN WALLET Ltd. (Fake Name)</h1>
-                <ul className='flex flex-row justify-evenly md:w-9/12 w-full flex-wrap'>
+            <div className='flex flex-col md:flex-row md:justify-between items-center px-10'>
+                <h1 className='w-3/12 md:text-left text-center'>CHAIN WALLET Ltd. (Fake Name)</h1>
+                <ul className='flex flex-col md:flex-row md:justify-evenly items-center md:w-9/12 w-full flex-wrap'>
                     <li className="mx-8 py-2 text-blue-700 font-medium flex-wrap">Check Markets</li>
                     <li className="mx-8 py-2 text-blue-700 font-medium flex-wrap">Add wallet</li>
                     <li className="mx-8 py-2 text-blue-700 font-medium flex-wrap">Visible wallets</li>

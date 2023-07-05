@@ -1,6 +1,6 @@
-import React from 'react';
 import { useTransactionContext } from '../context/TransactionContext';
 import { useFetch } from '../hooks/useFetch';
+import { shortenAddress } from '../utils/shortenAddress';
 
 export interface TransactionProps {
     id: number;
@@ -21,8 +21,8 @@ const Transaction = (props: TransactionProps) => {
     return (
         <li className='md:3/12 m-2'>
             <div className='flex flex-col bg-blue-600 rounded-3xl md:4/12 p-2'>
-                <a href={`todo`} target='_blank'>{`From: ${addressFrom}`}</a>
-                <a href={`todo`} target='_blank'>{`To: ${addressTo}`}</a>
+                <a href={`https://sepolia.etherscan.io/address/${addressFrom}`} target='_blank'>{`From: ${shortenAddress(addressFrom)}`}</a>
+                <a href={`https://sepolia.etherscan.io/address/${addressTo}`} target='_blank'>{`To: ${shortenAddress(addressTo)}`}</a>
                 <h1>{`Amount: ${amount} ETH`}</h1>
                 { message && <h1>{`Message: ${message}`}</h1> }
                 <img src={gifUrl ?? url} referrerPolicy='no-referrer' className='px-2 pt-2 rounded-xl w-96 h-96 self-center'></img>
@@ -37,11 +37,7 @@ export const Transactions = () => {
     if (!context) {
         return
     }
-    const {currentAccount, getAllTransactions, allTransactions} = context
-
-    React.useEffect(() => {
-        getAllTransactions()
-    }, [getAllTransactions])
+    const {currentAccount, allTransactions} = context
 
     return (
         <div className='flex flex-col items-center py-10'>
