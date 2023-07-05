@@ -7,14 +7,15 @@ interface ServiceCardProps {
     description: string
     icon: React.ReactElement
     key: string
+    iconColor: string
 }
 
 const ServiceCard = (props: ServiceCardProps) => {
-    const {title, description, icon, key} = props
+    const {title, description, icon, key, iconColor} = props
     return (
-        <li key={key} className='border-2 rounded-xl border-black p-4 my-4 lg:w-9/12 w-full'>
-            <div className='flex'>
-                <div className='w-10 h-10 flex justify-center items-center rounded-full bg-blue-800 mr-2'>
+        <li key={key} className='border-2 rounded-xl border-black p-4 my-4 w-full'>
+            <div className='flex flex-row'>
+                <div className={`w-10 h-10 flex justify-center items-center rounded-full ${iconColor} mr-2`}>
                     {icon}
                 </div>
                 <div>
@@ -33,25 +34,28 @@ export const Services = () => {
                 <h1 className='text-5xl text-center md:text-start'>Services that we <br /> continue to improve</h1>
                 <h3 className='text-xl mt-4 text-center md:text-start'>Buy, sell, and transfer crypto assets with the user-friendly services we offer</h3>
             </div>
-            <ul className='flex flex-col items-center lg:items-start'>
+            <ul className='flex flex-col items-center lg:items-start lg:pr-10'>
                 {[
                     {
                         icon: <BsShieldFillCheck fontSize={21} className='text-white'/>,
                         title: 'Security guarantee',
                         description: 'As a company we hold highly the security and privacy of our customers. Your data is secured with us.',
-                        key: 'security'
+                        key: 'security',
+                        iconColor: 'bg-blue-700'
                     },
                     {
                         icon: <BiSearchAlt fontSize={21} className='text-white'/>,
                         title: 'Best exchange rates',
                         description: 'We are working on our protocol to make the exchange rates as low as possible.',
-                        key: 'rates'
+                        key: 'rates',
+                        iconColor: 'bg-black'
                     },
                     {
                         icon: <RiHeart2Fill fontSize={21} className='text-white'/>,
                         title: 'Unlimited Exchange',
                         description: 'Exhange that never stops. Trade crypto assets regardless the time of the day.',
-                        key: 'unlimited'
+                        key: 'unlimited',
+                        iconColor: 'bg-red-700'
                     }
                 ].map(service => ServiceCard(service))}
             </ul>

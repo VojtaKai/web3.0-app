@@ -19,13 +19,13 @@ const Transaction = (props: TransactionProps) => {
     const gifUrl = useFetch({keyword})
 
     return (
-        <li className='md:3/12 m-2'>
-            <div className='flex flex-col bg-blue-600 rounded-3xl md:4/12 p-2'>
+        <li className='m-2'>
+            <div className='flex flex-col min-w-[500px] max-w-[500px] md:min-w-[300px] md:max-w-[300px] lg:min-w-[500px] lg:max-w-[500px] bg-blue-600 rounded-3xl p-4'>
                 <a href={`https://sepolia.etherscan.io/address/${addressFrom}`} target='_blank'>{`From: ${shortenAddress(addressFrom)}`}</a>
                 <a href={`https://sepolia.etherscan.io/address/${addressTo}`} target='_blank'>{`To: ${shortenAddress(addressTo)}`}</a>
                 <h1>{`Amount: ${amount} ETH`}</h1>
                 { message && <h1>{`Message: ${message}`}</h1> }
-                <img src={gifUrl ?? url} referrerPolicy='no-referrer' className='px-2 pt-2 rounded-xl w-96 h-96 self-center'></img>
+                <img src={gifUrl ?? url} referrerPolicy='no-referrer' className='px-2 pt-2 rounded-xl h-64 lg:h-96 self-center object-cover'></img>
                 <h1 className='text-white text-center border-black rounded-xl bg-black w-[50%] self-center mt-[-12px]'>{new Date(timestamp).toLocaleString()}</h1>
             </div>
         </li>

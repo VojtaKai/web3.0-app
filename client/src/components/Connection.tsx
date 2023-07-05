@@ -98,7 +98,7 @@ export const Connect = () => {
     return (
         <div className='md:flex md:flex-row block md:justify-evenly justify-center w-full md:mt-[90px] mt-0'>
             <div className='flex flex-col items-center'>
-                <h1 className='text-5xl'>Connect with the World</h1>
+                <h1 className='text-5xl mt-4 md:mt-0'>Connect with the World</h1>
                 <h1 className='text-3xl md:self-start mt-4 md:mt-0'>Send transactions across the world <br /> with immediate affect</h1>
                 {
                     !currentAccount && 
