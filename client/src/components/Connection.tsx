@@ -36,7 +36,7 @@ interface ValidData {
 
 const Guarantee = (props: LinesProps) => {
     const baseStyle = 'border-4 border-black w-32 text-center py-1 bg-blue-400 cursor-pointer'
-    return <li className={`${baseStyle} ${props.styleProps}`}><h1 className='hover:font-bold hover:text-blue-700'>{props.title}</h1></li>
+    return <li className={`${baseStyle} ${props.styleProps}`}><h1 className='hover:font-bold hover:text-blue-700 font-openSans'>{props.title}</h1></li>
 }
 
 export const Connect = () => {
